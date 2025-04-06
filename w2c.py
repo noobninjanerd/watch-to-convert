@@ -4,6 +4,26 @@ from watchdog.events import FileSystemEventHandler, LoggingEventHandler
 
 # pip install git+https://github.com/mitya57/python-markdown-math.git
 
+def convert_to_html(src_file, converted_file):
+	with open(src_file, "r") as input_md:
+		html = markdown.markdown(input_md.read(), 
+								extensions=['mdx_math', 'footnotes'],
+								)
+		print("Md file opened \n")
+	time_modified_raw = os.path.getmtime(src_file)
+	edit_stamp = "<h4> Last Modified on " + time.ctime(time_modified_raw) +  " </h4>"
+	index = html.find("</h1>")
+	html = html[:index + len("</h1>")] + edit_stamp + html[index + len("</h1>"):]
+
+	# as the <script type="math/tex; mode=display"> ... </scrip> isn't being rendered by MathJax
+	html = html.replace('<script type="math/tex; mode=display">', '$$')
+	html = html.replace('</script>', '$$')
+
+	with open(converted_file, "w") as output_file:
+		output_file.write(html)
+		
+	print("Html file updated !! \n")
+
 class myHandler(FileSystemEventHandler):
 	print("Handler called \n")
 	def on_modified(self, event):
@@ -18,28 +38,29 @@ class myHandler(FileSystemEventHandler):
 				src = os.path.join(path_to_observe, filename)
 				dest = os.path.join(dest_path, new_html_file)
 
-				print(f"Source: {src} \n")
-				print(f"Destination: {dest} \n")
+				if os.path.getmtime(src) > os.path.getmtime(dest):
+					print(f"Source: {src} \n")
+					print(f"Destination: {dest} \n")
 
-				with open(src, "r") as input_md:
-					html = markdown.markdown(input_md.read(), 
-											extensions=['mdx_math', 'footnotes'],
-											)
-					print("Md file opened \n")
-				time_modified_raw = os.path.getmtime(src)
-				edit_stamp = "<h4> Last Modified on " + time.ctime(time_modified_raw) +  " </h4>"
-				index = html.find("</h1>")
-				html = html[:index + len("</h 1>")] + edit_stamp + html[index + len("</h1>"):]
+					print(f"{src} is getting converted!")
+					convert_to_html(src, dest)
+				else:
+					print(f"{src} has already been converted and up to date in {dest} \n")
 
-				# as the <script type="math/tex; mode=display"> ... </scrip> isn't being rendered by MathJax
-				html = html.replace('<script type="math/tex; mode=display">', '$$')
-				html = html.replace('</script>', '$$')
+	def on_created(self, event):	
+		print("On_create Called \n")
+		dest_path = "./DESTFOLDER"
+		for filename in os.listdir(path_to_observe):
+			if filename.endswith('.md'):
+				root, ext = os.path.splitext(filename)
+				new_html_file = root + ".html"
+				
+				src = os.path.join(path_to_observe, filename)
+				dest = os.path.join(dest_path, new_html_file)
 
-				with open(dest, "w") as output_file:
-					output_file.write(html)
-					print("Html file written \n")
-
-				print("Task done!")
+				if not os.path.isfile(dest):
+					print(f"{dest} does not exist so we will create it \n")
+					open(dest, "x")
 
 
 if __name__ == '__main__':
