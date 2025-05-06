@@ -4,6 +4,8 @@ from watchdog.events import FileSystemEventHandler, LoggingEventHandler
 
 # pip install git+https://github.com/mitya57/python-markdown-math.git
 
+# def path_builder(src_folder, dest_folder)
+
 def convert_to_html(src_file, converted_file):
 	with open(src_file, "r") as input_md:
 		html = markdown.markdown(input_md.read(), 
@@ -28,7 +30,7 @@ class myHandler(FileSystemEventHandler):
 	print("Handler called \n")
 	def on_modified(self, event):
 		print("On_modified Called \n")
-		dest_path = "./DESTFOLDER"
+		dest_path = "../r-log/content/"
 		# markdown.markdownFromFile(input='./Transphobia.md', output="bing.html")
 		for filename in os.listdir(path_to_observe):
 			if filename.endswith('.md'):
@@ -49,7 +51,7 @@ class myHandler(FileSystemEventHandler):
 
 	def on_created(self, event):	
 		print("On_create Called \n")
-		dest_path = "./DESTFOLDER"
+		dest_path = "../r-log/content/"
 		for filename in os.listdir(path_to_observe):
 			if filename.endswith('.md'):
 				root, ext = os.path.splitext(filename)
