@@ -33,7 +33,10 @@ def convert_to_html(src_file, converted_file):
 	with open(src_file, "r") as input_md:
 		html = markdown.markdown(input_md.read(), extensions=['mdx_math', 'footnotes'],)
 		print("Md file opened \n")
-	
+
+	# our stub.html will have the title-card with the meta-data
+	# we don't need to add the title and "Created on:" to our content.html
+	html = "\n".join(html.split("\n")[2:])
 	# # get the latest file modified time
 	# time_modified_raw = os.path.getmtime(src_file) #
 	
